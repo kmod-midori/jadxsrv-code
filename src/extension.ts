@@ -241,20 +241,37 @@ async function renameSymbol(editor: vscode.TextEditor, jadxFs: JadxFs): Promise<
 
 	try {
 		const response = await api.renameSymbol(path, offset, name);
-		const renamedUri = jadxLocationToUri(response.location);
-		jadxFs.notifyRenamed(document.uri, renamedUri);
-		if (renamedUri.toString() !== document.uri.toString()) {
-			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		const newUri = jadxLocationToUri(response.location);
+		const oldUri = response.oldLocation ? jadxLocationToUri(response.oldLocation) : null;
+		if (oldUri !== null && oldUri.toString() !== newUri.toString()) {
+			// A top-level class was renamed: its file moved. Retarget any
+			// editor showing the old file; all other open jadx: documents
+			// (including this one) reload via the change events.
+			jadxFs.notifyRenamed(oldUri, newUri);
+			await retargetRenamedClassTabs(oldUri, newUri);
 		} else {
-			await vscode.commands.executeCommand('workbench.action.files.revert');
+			// Member or variable rename: the current file stays put, only
+			// its content (and that of other affected classes) changes.
+			jadxFs.notifyRenamed(document.uri, document.uri);
 		}
-		await vscode.window.showTextDocument(renamedUri, {
-			preview: false,
-			viewColumn: editor.viewColumn,
-		});
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error);
 		void vscode.window.showErrorMessage(message);
+	}
+}
+
+async function retargetRenamedClassTabs(oldUri: vscode.Uri, newUri: vscode.Uri): Promise<void> {
+	for (const group of vscode.window.tabGroups.all) {
+		for (const tab of group.tabs) {
+			if (tab.input instanceof vscode.TabInputText && tab.input.uri.toString() === oldUri.toString()) {
+				await vscode.window.tabGroups.close(tab);
+				await vscode.window.showTextDocument(newUri, {
+					preview: false,
+					preserveFocus: !tab.isActive,
+					viewColumn: group.viewColumn,
+				});
+			}
+		}
 	}
 }
 

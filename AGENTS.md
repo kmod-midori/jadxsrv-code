@@ -52,6 +52,10 @@ symbol renaming behaviour against a running `jadxsrv` server.
 - The `jadx.renameSymbol` editor command sends a cursor offset and alias to the
   server. It must reopen the URI returned for class aliases, and emit filesystem
   change events so Explorer and documents refresh; empty input resets an alias.
+  `JadxFs.notifyRenamed()` fires a change event for every open `jadx:` document,
+  not just the edited one, because a rename can rewrite call sites in other
+  classes; the read-only scheme means those documents are never dirty, so VS
+  Code reloads them from the provider automatically.
 - The streamed search endpoint returns newline-delimited JSON. Preserve partial
   chunks until a newline is received and use its `DELETE` endpoint to cancel
   active server-side searches.

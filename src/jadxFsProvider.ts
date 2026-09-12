@@ -34,6 +34,13 @@ export class JadxFs implements vscode.FileSystemProvider {
                 { type: vscode.FileChangeType.Created, uri: newUri },
             );
         }
+        // Reload all other tabs
+        for (const doc of vscode.workspace.textDocuments) {
+            const docUri = doc.uri.toString();
+            if (doc.uri.scheme === 'jadx' && docUri !== oldUri.toString() && docUri !== newUri.toString()) {
+                events.push({ type: vscode.FileChangeType.Changed, uri: doc.uri });
+            }
+        }
         this._emitter.fire(events);
     }
 

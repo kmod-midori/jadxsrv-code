@@ -10,6 +10,8 @@ const baseUrl = 'http://127.0.0.1:28080';
 interface RenameResponse {
     location: JadxLocation;
     name: string;
+    /** Set only when a top-level class was renamed and its file moved. */
+    oldLocation: JadxLocation | null;
 }
 
 interface RenameInfoResponse {
