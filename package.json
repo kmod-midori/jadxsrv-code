@@ -1,0 +1,100 @@
+{
+	"name": "vscode-jadx",
+	"displayName": "JADX",
+	"description": "Showcase for the file system provider API, also useful for testing again document that are not on disk.",
+	"version": "0.0.3",
+	"publisher": "vscode-samples",
+	"private": true,
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-extension-samples"
+	},
+	"engines": {
+		"vscode": "^1.83.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"onFileSystem:jadx"
+	],
+	"main": "./out/src/extension",
+	"contributes": {
+		"keybindings": [
+			{
+				"key": "x",
+				"command": "editor.action.goToReferences",
+				"when": "editorTextFocus && resourceScheme == 'jadx'"
+			}
+		],
+		"commands": [
+			{
+				"command": "jadx.openFiles",
+				"title": "Open Files",
+				"category": "JADX"
+			},
+			{
+				"command": "jadx.openFolders",
+				"title": "Open Folders",
+				"category": "JADX"
+			},
+			{
+				"command": "jadx.addFiles",
+				"title": "Add files to current folder",
+				"category": "JADX"
+			},
+			{
+				"command": "jadx.addFolders",
+				"title": "Add files to current folder",
+				"category": "JADX"
+			},
+			{
+				"command": "jadx.findAnything",
+				"title": "Find Anything",
+				"category": "JADX"
+			}
+		],
+		"menus": {
+			"commandPalette": [
+				{
+					"command": "jadx.openFiles"
+				},
+				{
+					"command": "jadx.openFolders"
+				},
+				{
+					"command": "jadx.addFiles",
+					"when": "resourceScheme == 'jadx'"
+				},
+				{
+					"command": "jadx.addFolders",
+					"when": "resourceScheme == 'jadx'"
+				},
+				{
+					"command": "jadx.findAnything",
+					"when": "resourceScheme == 'jadx'"
+				}
+			]
+		}
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"lint": "eslint",
+		"watch": "tsc -watch -p ./"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.13.0",
+		"@stylistic/eslint-plugin": "^2.9.0",
+		"@types/node": "^20",
+		"@types/vscode": "^1.83.0",
+		"@vscode/dts": "^0.4.1",
+		"eslint": "^9.13.0",
+		"typescript": "^5.8.2",
+		"typescript-eslint": "^8.26.0"
+	},
+	"dependencies": {
+		"nanoid": "^5.1.5"
+	}
+}
