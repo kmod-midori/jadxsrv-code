@@ -293,6 +293,9 @@ export function activate(context: vscode.ExtensionContext) {
 	const documentSymbolProvider = new providers.JadxDocumentSymbol();
 	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider({ language: 'java', scheme: 'jadx' }, documentSymbolProvider));
 
+	const callHierarchyProvider = new providers.JadxCallHierarchyProvider();
+	context.subscriptions.push(vscode.languages.registerCallHierarchyProvider({ language: 'java', scheme: 'jadx' }, callHierarchyProvider));
+
 	context.subscriptions.push(vscode.commands.registerCommand('jadx.openDecompiler', () => {
 		openDecompiler();
 	}));

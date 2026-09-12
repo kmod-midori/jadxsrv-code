@@ -76,3 +76,40 @@ export async function fetchReadDir(path: string, token: vscode.CancellationToken
     const url = `${baseUrl}/ls/${path}`;
     return await fetchJson(url, token);
 }
+
+export interface CallHierarchyItem {
+    name: string;
+    detail: string;
+    kind: vscode.SymbolKind;
+    location: JadxLocation;
+    /** Byte offset of the declaration in the location's file */
+    offset: number;
+}
+
+interface CallHierarchyPrepareResponse {
+    item: CallHierarchyItem | null;
+}
+
+export interface CallHierarchyCall {
+    item: CallHierarchyItem;
+    callOffsets: number[];
+}
+
+interface CallHierarchyCallsResponse {
+    calls: CallHierarchyCall[];
+}
+
+export async function fetchCallHierarchyItem(path: string, offset: number, token: vscode.CancellationToken | null): Promise<CallHierarchyPrepareResponse> {
+    const url = `${baseUrl}/callhierarchy/${path}?offset=${offset}`;
+    return await fetchJson(url, token);
+}
+
+export async function fetchCallHierarchyIncoming(path: string, offset: number, token: vscode.CancellationToken | null): Promise<CallHierarchyCallsResponse> {
+    const url = `${baseUrl}/callhierarchy/incoming/${path}?offset=${offset}`;
+    return await fetchJson(url, token);
+}
+
+export async function fetchCallHierarchyOutgoing(path: string, offset: number, token: vscode.CancellationToken | null): Promise<CallHierarchyCallsResponse> {
+    const url = `${baseUrl}/callhierarchy/outgoing/${path}?offset=${offset}`;
+    return await fetchJson(url, token);
+}

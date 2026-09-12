@@ -24,7 +24,11 @@ symbol renaming behaviour against a running `jadxsrv` server.
 - `src/api.ts` defines typed client functions for navigation and outline
   endpoints.
 - `src/providers.ts` translates server responses into VS Code definition,
-  references, hover, and document-symbol provider results.
+  references, hover, document-symbol, and call-hierarchy provider results.
+  The call-hierarchy provider round-trips item identity (class path +
+  declaration byte offset) through a `WeakMap` because `CallHierarchyItem.data`
+  requires VS Code 1.89 and this package targets 1.83; ranges are derived
+  client-side from offsets via `document.positionAt()`.
 - `src/utils.ts` owns URI encoding/parsing, fetch handling, location-to-URI
   conversion, and NDJSON search streaming.
 - `package.json` declares activation, contributed commands, and the npm
@@ -64,5 +68,6 @@ symbol renaming behaviour against a running `jadxsrv` server.
 
 Coordinate endpoint or response-schema changes with the sibling `jadxsrv`
 project. This extension consumes `ls`, `stat`, `read`, `annotation`,
-`definition`, `refs`, `outline`, `rename`, and streaming `search` endpoints,
-and assumes the server's LSP-style line/character positions and symbol kinds.
+`definition`, `refs`, `outline`, `rename`, `callhierarchy`, and streaming
+`search` endpoints, and assumes the server's LSP-style line/character
+positions and symbol kinds.

@@ -31,6 +31,11 @@
 				"key": "n",
 				"command": "jadx.renameSymbol",
 				"when": "editorTextFocus && resourceScheme == 'jadx'"
+			},
+			{
+				"key": "c",
+				"command": "editor.showCallHierarchy",
+				"when": "editorTextFocus && resourceScheme == 'jadx'"
 			}
 		],
 		"commands": [

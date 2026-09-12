@@ -89,3 +89,75 @@ export class JadxDocumentSymbol implements vscode.DocumentSymbolProvider {
         return [];
     }
 }
+
+interface CallHierarchyItemData {
+    path: string;
+    offset: number;
+}
+
+function offsetRange(document: vscode.TextDocument, offset: number, length: number): vscode.Range {
+    const start = document.positionAt(offset);
+    return new vscode.Range(start, start.translate(0, length));
+}
+
+export class JadxCallHierarchyProvider implements vscode.CallHierarchyProvider {
+    // CallHierarchyItem.data requires VS Code 1.89; on 1.83 round-trip the
+    // item identity through a WeakMap (VS Code always passes back the exact
+    // item instances this provider returned).
+    private itemData = new WeakMap<vscode.CallHierarchyItem, CallHierarchyItemData>();
+
+    private async toItem(item: api.CallHierarchyItem): Promise<vscode.CallHierarchyItem> {
+        const uri = jadxLocationToUri(item.location);
+        const document = await vscode.workspace.openTextDocument(uri);
+        const range = offsetRange(document, item.offset, item.name.length);
+        const result = new vscode.CallHierarchyItem(item.kind, item.name, item.detail, uri, range, range);
+        this.itemData.set(result, { path: extractFromUri(uri).path, offset: item.offset });
+        return result;
+    }
+
+    async prepareCallHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.CallHierarchyItem[]> {
+        const { path } = extractFromUri(document.uri);
+        const wordRange = document.getWordRangeAtPosition(position);
+        const offset = document.offsetAt(wordRange?.start ?? position);
+        const response = await api.fetchCallHierarchyItem(path, offset, token);
+        if (!response.item) {
+            return [];
+        }
+        return [await this.toItem(response.item)];
+    }
+
+    async provideCallHierarchyIncomingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyIncomingCall[]> {
+        const data = this.itemData.get(item);
+        if (!data) {
+            return [];
+        }
+        const response = await api.fetchCallHierarchyIncoming(data.path, data.offset, token);
+        const calls: vscode.CallHierarchyIncomingCall[] = [];
+        for (const call of response.calls) {
+            const from = await this.toItem(call.item);
+            const document = await vscode.workspace.openTextDocument(from.uri);
+            // Call sites show the queried method's name, not the caller's
+            const fromRanges = call.callOffsets.map(offset => offsetRange(document, offset, item.name.length));
+            calls.push(new vscode.CallHierarchyIncomingCall(from, fromRanges));
+        }
+        return calls;
+    }
+
+    async provideCallHierarchyOutgoingCalls(item: vscode.CallHierarchyItem, token: vscode.CancellationToken): Promise<vscode.CallHierarchyOutgoingCall[]> {
+        const data = this.itemData.get(item);
+        if (!data) {
+            return [];
+        }
+        const response = await api.fetchCallHierarchyOutgoing(data.path, data.offset, token);
+        const document = await vscode.workspace.openTextDocument(item.uri);
+        const calls: vscode.CallHierarchyOutgoingCall[] = [];
+        for (const call of response.calls) {
+            const to = await this.toItem(call.item);
+            // Call sites sit in the queried method's file and show the
+            // callee's name
+            const fromRanges = call.callOffsets.map(offset => offsetRange(document, offset, call.item.name.length));
+            calls.push(new vscode.CallHierarchyOutgoingCall(to, fromRanges));
+        }
+        return calls;
+    }
+}
