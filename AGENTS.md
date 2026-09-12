@@ -37,10 +37,10 @@ behaviour against a running `jadxsrv` server.
 - Follow the local style in the file being changed. Source files currently use
   both tabs and spaces, so do not reformat unrelated code.
 - Build `jadx:` URIs with `makeUri()` and parse them with `extractFromUri()`;
-  preserve the format
-  `jadx:/<encoded-input-paths>/<input-file-name>/<virtual-path>`.
-- URL-safe-base64 encode input filesystem paths with `urlSafeBase64Encode()`.
-  Input paths may be semicolon-separated when several files are opened.
+  preserve the root-scoped format `jadx:/<virtual-path>`.
+- The server receives input paths only at startup. Do not add input paths,
+  input-selection state, or decompiler identity to extension URIs or request
+  URLs.
 - Keep network access cancellable when VS Code supplies a
   `CancellationToken`, using `fetchJson()` or an equivalent `AbortController`
   pattern.

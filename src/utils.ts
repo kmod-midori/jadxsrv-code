@@ -23,27 +23,15 @@ export async function fetchJson<T>(url: string, cancelToken: vscode.Cancellation
     return response.json() as T;
 }
 
-export function urlSafeBase64Encode(str: string): string {
-    return Buffer.from(str, 'utf-8').toString('base64')
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-}
-
 /**
- * URI format: `jadx:encodedFilePath/originalFileName/path/to/file`
- * @param uri The URI to extract the file path and path from.
+ * URI format: `jadx:/path/to/file`
  */
-export function extractFromUri(uri: vscode.Uri): { encodedFilePath: string, fileName: string, path: string } {
-    const pathParts = uri.path.split('/');
-    const encodedFilePath = pathParts[1];
-    const fileName = pathParts[2];
-    const path = pathParts.slice(3).join('/');
-    return { encodedFilePath, fileName, path };
+export function extractFromUri(uri: vscode.Uri): { path: string } {
+    return { path: uri.path.replace(/^\/+/, '') };
 }
 
-export function makeUri(encodedFilePath: string, fileName: string, path: string): vscode.Uri {
-    return vscode.Uri.parse(`jadx:/${encodedFilePath}/${fileName}/${path}`);
+export function makeUri(path: string): vscode.Uri {
+    return vscode.Uri.parse(`jadx:/${path}`);
 }
 
 export interface JadxLocation {
@@ -52,9 +40,9 @@ export interface JadxLocation {
     position: { line: number; character: number; } | null;
 }
 
-export function jadxLocationToUri(location: JadxLocation, encodedFilePath: string, fileName: string): vscode.Uri {
+export function jadxLocationToUri(location: JadxLocation): vscode.Uri {
     const path = `classes/${location.topPackageName.replace(/\./g, '/')}/${location.topClassName}.java`;
-    return makeUri(encodedFilePath, fileName, path);
+    return makeUri(path);
 }
 
 export class JSONStreamer<T> {

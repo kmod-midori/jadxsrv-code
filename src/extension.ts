@@ -1,56 +1,13 @@
 import * as vscode from 'vscode';
 import { JadxFs } from './jadxFsProvider';
 import * as providers from './providers';
-import { extractFromUri, fetchJson, JadxLocation, jadxLocationToUri, JSONStreamer, makeUri, urlSafeBase64Encode } from './utils';
+import { JadxLocation, jadxLocationToUri, JSONStreamer } from './utils';
 import { nanoid } from 'nanoid';
 
-function openUris(uris?: vscode.Uri[]) {
-	if (!uris || uris.length === 0) {
-		return;
-	}
-
-	const encodedFsPaths = uris.map((file) => urlSafeBase64Encode(file.fsPath));
-
-	vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.parse(`jadx:/${encodedFsPaths.join(';')}/input.apk/`), false);
+function openDecompiler() {
+	vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.parse('jadx:/'), false);
 	vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
 	vscode.commands.executeCommand('workbench.view.explorer');
-}
-
-function addUris(currentUri: vscode.Uri, uris?: vscode.Uri[]) {
-	if (!uris || uris.length === 0) {
-		return;
-	}
-
-	const encodedFsPaths = uris.map((file) => urlSafeBase64Encode(file.fsPath));
-
-	const { encodedFilePath: originalPaths } = extractFromUri(currentUri);
-
-	vscode.commands.executeCommand('vscode.openFolder', vscode.Uri.parse(`jadx:/${originalPaths};${encodedFsPaths.join(';')}/input.apk/`), false);
-	vscode.commands.executeCommand('workbench.action.focusActiveEditorGroup');
-	vscode.commands.executeCommand('workbench.view.explorer');
-}
-
-async function selectFiles(): Promise<vscode.Uri[] | undefined> {
-	return await vscode.window.showOpenDialog({
-		canSelectFiles: true,
-		canSelectFolders: false,
-		canSelectMany: true,
-		filters: {
-			"Supported Files (apk, dex, jar, zip)": ["apk", "dex", "jar", "zip", "class", "smali"],
-		}
-	});
-}
-
-async function selectFolders(): Promise<vscode.Uri[] | undefined> {
-	return await vscode.window.showOpenDialog({
-		canSelectFiles: false,
-		canSelectFolders: true,
-		canSelectMany: true,
-	});
-}
-
-interface SearchResponse {
-	symbols: WorkspaceSymbol[];
 }
 
 interface WorkspaceSymbol {
@@ -86,12 +43,12 @@ class SearchPickItem implements vscode.QuickPickItem {
 	uri: vscode.Uri;
 	position: vscode.Position;
 
-	constructor(encodedFilePath: string, fileName: string, item: WorkspaceSymbol) {
+	constructor(item: WorkspaceSymbol) {
 		this.label = item.name;
 		this.description = item.containerName;
 		this.iconPath = new vscode.ThemeIcon(symbolKindToIcon(item.kind));
 		this.detail = item.detail;
-		this.uri = jadxLocationToUri(item.location, encodedFilePath, fileName);
+		this.uri = jadxLocationToUri(item.location);
 		if (item.location.position) {
 			this.position = new vscode.Position(item.location.position.line, item.location.position.character);
 		} else {
@@ -143,9 +100,7 @@ class SearchPickButton implements vscode.QuickInputButton {
 	}
 }
 
-async function findAnything(uri: vscode.Uri) {
-	const { encodedFilePath, fileName } = extractFromUri(uri);
-
+async function findAnything() {
 	const searchTypes: SearchTypeItem[] = [
 		new SearchTypeItem('Class', 'class', true),
 		new SearchTypeItem('Method', 'method', true),
@@ -184,7 +139,7 @@ async function findAnything(uri: vscode.Uri) {
 	if (pickedCaseSensitivity.ignoreCase) {
 		queryParams += '&ignoreCase=true';
 	}
-	const baseUrl = `http://127.0.0.1:28080/${encodedFilePath}/search`;
+	const baseUrl = 'http://127.0.0.1:28080/search';
 
 	let currentStreamer: JSONStreamer<WorkspaceSymbol> | null = null;
 	let currentTaskId: string | null = null;
@@ -215,7 +170,7 @@ async function findAnything(uri: vscode.Uri) {
 		searchPick.busy = true;
 		currentStreamer.onItem((item) => {
 			if (item) {
-				const searchItem = new SearchPickItem(encodedFilePath, fileName, item);
+				const searchItem = new SearchPickItem(item);
 				searchPick.items = [...searchPick.items, searchItem];
 			} else {
 				if (searchPick.items.length === 0) {
@@ -280,22 +235,12 @@ export function activate(context: vscode.ExtensionContext) {
 	const documentSymbolProvider = new providers.JadxDocumentSymbol();
 	context.subscriptions.push(vscode.languages.registerDocumentSymbolProvider({ language: 'java', scheme: 'jadx' }, documentSymbolProvider));
 
-	context.subscriptions.push(vscode.commands.registerCommand('jadx.openFiles', async () => {
-		openUris(await selectFiles());
-	}));
-	context.subscriptions.push(vscode.commands.registerCommand('jadx.openFolders', async () => {
-		openUris(await selectFolders());
+	context.subscriptions.push(vscode.commands.registerCommand('jadx.openDecompiler', () => {
+		openDecompiler();
 	}));
 
-	context.subscriptions.push(vscode.commands.registerTextEditorCommand('jadx.addFiles', async (editor) => {
-		addUris(editor.document.uri, await selectFiles());
-	}));
-	context.subscriptions.push(vscode.commands.registerTextEditorCommand('jadx.addFolders', async (editor) => {
-		addUris(editor.document.uri, await selectFolders());
-	}));
-
-	context.subscriptions.push(vscode.commands.registerTextEditorCommand('jadx.findAnything', async (editor) => {
-		findAnything(editor.document.uri);
+	context.subscriptions.push(vscode.commands.registerTextEditorCommand('jadx.findAnything', async () => {
+		findAnything();
 	}));
 }
 

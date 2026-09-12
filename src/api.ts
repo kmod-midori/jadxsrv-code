@@ -7,8 +7,8 @@ interface DefinitionResponse {
 
 const baseUrl = 'http://127.0.0.1:28080';
 
-export async function fetchDefinition(encodedFilePath: string, path: string, offset: number, token: vscode.CancellationToken | null): Promise<DefinitionResponse> {
-    const url = `${baseUrl}/${encodedFilePath}/definition/${path}?offset=${offset}`;
+export async function fetchDefinition(path: string, offset: number, token: vscode.CancellationToken | null): Promise<DefinitionResponse> {
+    const url = `${baseUrl}/definition/${path}?offset=${offset}`;
     return await fetchJson(url, token);
 }
 
@@ -16,8 +16,8 @@ interface RefsResponse {
     refs: JadxLocation[];
 }
 
-export async function fetchRefs(encodedFilePath: string, path: string, offset: number, token: vscode.CancellationToken | null): Promise<RefsResponse> {
-    const url = `${baseUrl}/${encodedFilePath}/refs/${path}?offset=${offset}`;
+export async function fetchRefs(path: string, offset: number, token: vscode.CancellationToken | null): Promise<RefsResponse> {
+    const url = `${baseUrl}/refs/${path}?offset=${offset}`;
     return await fetchJson(url, token);
 }
 
@@ -25,8 +25,8 @@ interface AnnotationResponse {
     content: string | null;
 }
 
-export async function fetchAnnotation(encodedFilePath: string, path: string, offset: number, token: vscode.CancellationToken | null): Promise<AnnotationResponse> {
-    const url = `${baseUrl}/${encodedFilePath}/annotation/${path}?offset=${offset}`;
+export async function fetchAnnotation(path: string, offset: number, token: vscode.CancellationToken | null): Promise<AnnotationResponse> {
+    const url = `${baseUrl}/annotation/${path}?offset=${offset}`;
     return await fetchJson(url, token);
 }
 
@@ -42,8 +42,8 @@ export interface Symbol {
     children: Symbol[];
 }
 
-export async function fetchOutline(encodedFilePath: string, path: string, token: vscode.CancellationToken | null): Promise<OutlineResponse> {
-    const url = `${baseUrl}/${encodedFilePath}/outline/${path}`;
+export async function fetchOutline(path: string, token: vscode.CancellationToken | null): Promise<OutlineResponse> {
+    const url = `${baseUrl}/outline/${path}`;
     return await fetchJson(url, token);
 }
 
@@ -52,7 +52,7 @@ interface ReadDirResponse {
     files: string[];
 }
 
-export async function fetchReadDir(encodedFilePath: string, path: string, token: vscode.CancellationToken | null): Promise<ReadDirResponse> {
-    const url = `${baseUrl}/${encodedFilePath}/ls/${path}`;
+export async function fetchReadDir(path: string, token: vscode.CancellationToken | null): Promise<ReadDirResponse> {
+    const url = `${baseUrl}/ls/${path}`;
     return await fetchJson(url, token);
 }

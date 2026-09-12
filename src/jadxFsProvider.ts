@@ -27,8 +27,8 @@ export class JadxFs implements vscode.FileSystemProvider {
     }
 
     async stat(uri: vscode.Uri): Promise<vscode.FileStat> {
-        const { encodedFilePath, fileName, path } = extractFromUri(uri);
-        const url = `${baseUrl}/${encodedFilePath}/stat/${path}`;
+        const { path } = extractFromUri(uri);
+        const url = `${baseUrl}/stat/${path}`;
         const response = await fetch(url);
         if (!response.ok) {
             throw vscode.FileSystemError.FileNotFound();
@@ -38,8 +38,8 @@ export class JadxFs implements vscode.FileSystemProvider {
     }
 
     async readDirectory(uri: vscode.Uri): Promise<[string, vscode.FileType][]> {
-        const { encodedFilePath, fileName, path } = extractFromUri(uri);
-        const data = await api.fetchReadDir(encodedFilePath, path, null);
+        const { path } = extractFromUri(uri);
+        const data = await api.fetchReadDir(path, null);
 
         const entries: [string, vscode.FileType][] = [];
         for (const dirName of data.dirs) {
@@ -53,8 +53,8 @@ export class JadxFs implements vscode.FileSystemProvider {
     }
 
     async readFile(uri: vscode.Uri): Promise<Uint8Array> {
-        const { encodedFilePath, fileName, path } = extractFromUri(uri);
-        const url = `${baseUrl}/${encodedFilePath}/read/${path}`;
+        const { path } = extractFromUri(uri);
+        const url = `${baseUrl}/read/${path}`;
         const response = await fetch(url);
         if (response.status === 404) {
             throw vscode.FileSystemError.FileNotFound();

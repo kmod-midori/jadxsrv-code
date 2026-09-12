@@ -1,19 +1,19 @@
 import * as vscode from 'vscode';
 import * as api from './api';
-import { extractFromUri, jadxLocationToUri, makeUri } from './utils';
+import { extractFromUri, jadxLocationToUri } from './utils';
 
 export class JadxDefinitionProvider implements vscode.DefinitionProvider {
     async provideDefinition(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Definition | vscode.DefinitionLink[]> {
-        const { encodedFilePath, fileName, path } = extractFromUri(document.uri);
+        const { path } = extractFromUri(document.uri);
         let customRegex: RegExp | undefined = undefined;
         if (document.languageId === 'xml') {
             customRegex = /[a-zA-Z0-9.]+/;
         }
         const wordRange = document.getWordRangeAtPosition(position, customRegex);
         const offset = document.offsetAt(wordRange?.start || position);
-        const response = await api.fetchDefinition(encodedFilePath, path, offset, token);
+        const response = await api.fetchDefinition(path, offset, token);
         if (response.def) {
-            const fileUri = jadxLocationToUri(response.def, encodedFilePath, fileName);
+            const fileUri = jadxLocationToUri(response.def);
             if (response.def.position === null) {
                 return new vscode.Location(fileUri, new vscode.Position(0, 0));
             }
@@ -25,13 +25,13 @@ export class JadxDefinitionProvider implements vscode.DefinitionProvider {
 
 export class JadxReferenceProvider implements vscode.ReferenceProvider {
     async provideReferences(document: vscode.TextDocument, position: vscode.Position, context: vscode.ReferenceContext, token: vscode.CancellationToken): Promise<vscode.Location[]> {
-        const { encodedFilePath, fileName, path } = extractFromUri(document.uri);
+        const { path } = extractFromUri(document.uri);
         const offset = document.offsetAt(document.getWordRangeAtPosition(position)?.start || position);
-        const response = await api.fetchRefs(encodedFilePath, path, offset, token);
+        const response = await api.fetchRefs(path, offset, token);
 
         const res = [];
         for (const ref of response.refs) {
-            const fileUri = jadxLocationToUri(ref, encodedFilePath, fileName);
+            const fileUri = jadxLocationToUri(ref);
             if (ref.position === null) {
                 res.push(new vscode.Location(fileUri, new vscode.Position(0, 0)));
             } else {
@@ -45,14 +45,14 @@ export class JadxReferenceProvider implements vscode.ReferenceProvider {
 
 export class JadxHoverProvider implements vscode.HoverProvider {
     async provideHover(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.Hover | null> {
-        const { encodedFilePath, fileName, path } = extractFromUri(document.uri);
+        const { path } = extractFromUri(document.uri);
         let customRegex: RegExp | undefined = undefined;
         if (document.languageId === 'xml') {
             customRegex = /[a-zA-Z0-9.]+/;
         }
         const wordRange = document.getWordRangeAtPosition(position, customRegex);
         const offset = document.offsetAt(wordRange?.start || position);
-        const response = await api.fetchAnnotation(encodedFilePath, path, offset, token);
+        const response = await api.fetchAnnotation(path, offset, token);
 
         const content = response.content;
         if (content) {
@@ -81,8 +81,8 @@ export class JadxDocumentSymbol implements vscode.DocumentSymbolProvider {
     }
 
     async provideDocumentSymbols(document: vscode.TextDocument, token: vscode.CancellationToken): Promise<vscode.DocumentSymbol[]> {
-        const { encodedFilePath, fileName, path } = extractFromUri(document.uri);
-        const response = await api.fetchOutline(encodedFilePath, path, token);
+        const { path } = extractFromUri(document.uri);
+        const response = await api.fetchOutline(path, token);
         if (response.root) {
             return [this.convertSymbol(document, response.root)];
         }

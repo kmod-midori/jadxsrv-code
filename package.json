@@ -30,23 +30,8 @@
 		],
 		"commands": [
 			{
-				"command": "jadx.openFiles",
-				"title": "Open Files",
-				"category": "JADX"
-			},
-			{
-				"command": "jadx.openFolders",
-				"title": "Open Folders",
-				"category": "JADX"
-			},
-			{
-				"command": "jadx.addFiles",
-				"title": "Add files to current folder",
-				"category": "JADX"
-			},
-			{
-				"command": "jadx.addFolders",
-				"title": "Add files to current folder",
+				"command": "jadx.openDecompiler",
+				"title": "Open Decompiled Files",
 				"category": "JADX"
 			},
 			{
@@ -58,18 +43,7 @@
 		"menus": {
 			"commandPalette": [
 				{
-					"command": "jadx.openFiles"
-				},
-				{
-					"command": "jadx.openFolders"
-				},
-				{
-					"command": "jadx.addFiles",
-					"when": "resourceScheme == 'jadx'"
-				},
-				{
-					"command": "jadx.addFolders",
-					"when": "resourceScheme == 'jadx'"
+					"command": "jadx.openDecompiler"
 				},
 				{
 					"command": "jadx.findAnything",

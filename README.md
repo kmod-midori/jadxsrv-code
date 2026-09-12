@@ -1,19 +1,34 @@
-# MemFS
+# JADX for VS Code
 
-This extension implements an in-memory file system to show-case the [filesystem provider api](https://github.com/Microsoft/vscode/blob/51a880315fd0ec2cafb511a17de48ec31802ba6d/src/vs/vscode.d.ts#L4968). It serves two purposes:
+This VS Code extension exposes content decompiled by
+[jadxsrv](../jadxsrv) as a read-only `jadx:` filesystem. It provides
+go-to-definition, references, hover information, document symbols, and search
+for decompiled source.
 
-* Be a sample/reference for extension authors that want to implement a filesystem provider
-* Be a test for other extensions that *falsely* assume text document always live on disk.
+## Getting started
 
-To *get started* you need this:
+Start `jadxsrv` with the APK, JAR, or DEX inputs to decompile:
 
-* install this extension
-* when *not* having a workspace opened, select 'F1 > [MemFS] Setup Workspace' (optionally save the workspace now)
-* select 'F1 > [MemFs] Create Files' and notice how the explorer is now populated
-* ... try things out, e.g. IntelliSense in memfs-files, create new files, save them, etc
-* open `file.txt` and make changes
-* 'F1 > [MemFS] Delete "file.txt', observe that the editor is now indicating that the file is deleted
-* 'F1 > [MemFS] Add "file.txt', observe that the editor content is reset and the '(delete)' annotation disappeared
-* select 'F1 > [MemFs] Delete Files' or reload to restart
+```bash
+cd ../jadxsrv
+./gradlew run --args="/absolute/path/to/app.apk"
+```
 
-![sample screenshot](https://github.com/Microsoft/vscode-extension-samples/raw/main/fsprovider-sample/sample.png)
+Install and launch this extension, then run **JADX: Open Decompiled Files** from
+the Command Palette. The extension opens `jadx:/` and connects to the server at
+`http://127.0.0.1:28080`.
+
+The server owns the decompiler lifecycle and input selection. To decompile
+different files, restart `jadxsrv` with the new input paths before reopening the
+JADX workspace.
+
+## Development
+
+```bash
+npm ci
+npm run compile
+npm run lint
+```
+
+Use the **Launch Extension** configuration to open an Extension Development
+Host. Keep `jadxsrv` running with test inputs while exercising the extension.
