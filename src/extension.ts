@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import { JadxFs } from './jadxFsProvider';
+import * as api from './api';
 import * as providers from './providers';
-import { JadxLocation, jadxLocationToUri, JSONStreamer } from './utils';
+import { extractFromUri, JadxLocation, jadxLocationToUri, JSONStreamer } from './utils';
 import { nanoid } from 'nanoid';
 
 function openDecompiler() {
@@ -217,6 +218,46 @@ async function findAnything() {
 	searchPick.show();
 }
 
+async function renameSymbol(editor: vscode.TextEditor, jadxFs: JadxFs): Promise<void> {
+	const document = editor.document;
+	const position = editor.selection.active;
+	const wordRange = document.getWordRangeAtPosition(position);
+	const offset = document.offsetAt(wordRange?.start ?? position);
+	const { path } = extractFromUri(document.uri);
+	const renameInfo = await api.fetchRenameInfo(path, offset);
+	if (!renameInfo.canRename || renameInfo.name === null) {
+		void vscode.window.showInformationMessage('The symbol at the current position cannot be renamed.');
+		return;
+	}
+	const name = await vscode.window.showInputBox({
+		title: 'Rename JADX Symbol',
+		prompt: 'Enter a Java identifier, or leave empty to reset the alias.',
+		value: renameInfo.name,
+		valueSelection: [0, renameInfo.name.length],
+	});
+	if (name === undefined) {
+		return;
+	}
+
+	try {
+		const response = await api.renameSymbol(path, offset, name);
+		const renamedUri = jadxLocationToUri(response.location);
+		jadxFs.notifyRenamed(document.uri, renamedUri);
+		if (renamedUri.toString() !== document.uri.toString()) {
+			await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+		} else {
+			await vscode.commands.executeCommand('workbench.action.files.revert');
+		}
+		await vscode.window.showTextDocument(renamedUri, {
+			preview: false,
+			viewColumn: editor.viewColumn,
+		});
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		void vscode.window.showErrorMessage(message);
+	}
+}
+
 export function activate(context: vscode.ExtensionContext) {
 	const jadxFs = new JadxFs();
 	context.subscriptions.push(vscode.workspace.registerFileSystemProvider('jadx', jadxFs, { isCaseSensitive: true, isReadonly: true }));
@@ -241,6 +282,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerTextEditorCommand('jadx.findAnything', async () => {
 		findAnything();
+	}));
+	context.subscriptions.push(vscode.commands.registerTextEditorCommand('jadx.renameSymbol', async (editor) => {
+		await renameSymbol(editor, jadxFs);
 	}));
 }
 

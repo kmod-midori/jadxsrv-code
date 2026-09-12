@@ -11,7 +11,7 @@ Start `jadxsrv` with the APK, JAR, or DEX inputs to decompile:
 
 ```bash
 cd ../jadxsrv
-./gradlew run --args="/absolute/path/to/app.apk"
+./run.sh /absolute/path/to/app.apk
 ```
 
 Install and launch this extension, then run **JADX: Open Decompiled Files** from
@@ -21,6 +21,11 @@ the Command Palette. The extension opens `jadx:/` and connects to the server at
 The server owns the decompiler lifecycle and input selection. To decompile
 different files, restart `jadxsrv` with the new input paths before reopening the
 JADX workspace.
+
+Use **JADX: Rename Symbol** from the editor context menu or Command Palette
+(default shortcut: `N`) to rename the class, method, or field under the cursor.
+Enter an empty name to reset its alias. Renames last until `jadxsrv` is
+restarted.
 
 ## Development
 

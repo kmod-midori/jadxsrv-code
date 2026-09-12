@@ -22,6 +22,21 @@ export class JadxFs implements vscode.FileSystemProvider {
     private _emitter = new vscode.EventEmitter<vscode.FileChangeEvent[]>();
     onDidChangeFile: vscode.Event<vscode.FileChangeEvent[]> = this._emitter.event;
 
+    notifyRenamed(oldUri: vscode.Uri, newUri: vscode.Uri): void {
+        const events: vscode.FileChangeEvent[] = [
+            { type: vscode.FileChangeType.Changed, uri: vscode.Uri.parse('jadx:/classes') },
+        ];
+        if (oldUri.toString() === newUri.toString()) {
+            events.push({ type: vscode.FileChangeType.Changed, uri: oldUri });
+        } else {
+            events.push(
+                { type: vscode.FileChangeType.Deleted, uri: oldUri },
+                { type: vscode.FileChangeType.Created, uri: newUri },
+            );
+        }
+        this._emitter.fire(events);
+    }
+
     watch(_uri: vscode.Uri, _options: { readonly recursive: boolean; readonly excludes: readonly string[]; }): vscode.Disposable {
         return new vscode.Disposable(() => { });
     }

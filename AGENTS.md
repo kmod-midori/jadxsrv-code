@@ -12,8 +12,8 @@ scheme. The extension expects that server at `http://127.0.0.1:28080`.
 - Watch while developing: `npm run watch`
 
 There are no automated test scripts. Use VS Code's Extension Development Host
-to exercise filesystem, definition, reference, hover, outline, and search
-behaviour against a running `jadxsrv` server.
+to exercise filesystem, definition, reference, hover, outline, search, and
+symbol renaming behaviour against a running `jadxsrv` server.
 
 ## Project layout
 
@@ -49,6 +49,9 @@ behaviour against a running `jadxsrv` server.
 - Register disposables through `context.subscriptions` in `activate()`.
 - Treat data returned by the local server as untrusted: preserve URI encoding
   and do not widen trusted Markdown/HTML handling without an explicit need.
+- The `jadx.renameSymbol` editor command sends a cursor offset and alias to the
+  server. It must reopen the URI returned for class aliases, and emit filesystem
+  change events so Explorer and documents refresh; empty input resets an alias.
 - The streamed search endpoint returns newline-delimited JSON. Preserve partial
   chunks until a newline is received and use its `DELETE` endpoint to cancel
   active server-side searches.
@@ -57,5 +60,5 @@ behaviour against a running `jadxsrv` server.
 
 Coordinate endpoint or response-schema changes with the sibling `jadxsrv`
 project. This extension consumes `ls`, `stat`, `read`, `annotation`,
-`definition`, `refs`, `outline`, and streaming `search` endpoints, and assumes
-the server's LSP-style line/character positions and symbol kinds.
+`definition`, `refs`, `outline`, `rename`, and streaming `search` endpoints,
+and assumes the server's LSP-style line/character positions and symbol kinds.

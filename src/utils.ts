@@ -23,6 +23,22 @@ export async function fetchJson<T>(url: string, cancelToken: vscode.Cancellation
     return response.json() as T;
 }
 
+export async function postJson<T>(url: string, body: unknown): Promise<T> {
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(body),
+    });
+    if (!response.ok) {
+        throw new Error(`Failed to post JSON to ${url}: ${await response.text()}`);
+    }
+
+    return response.json() as T;
+}
+
 /**
  * URI format: `jadx:/path/to/file`
  */

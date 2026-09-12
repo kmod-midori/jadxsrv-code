@@ -26,6 +26,11 @@
 				"key": "x",
 				"command": "editor.action.goToReferences",
 				"when": "editorTextFocus && resourceScheme == 'jadx'"
+			},
+			{
+				"key": "n",
+				"command": "jadx.renameSymbol",
+				"when": "editorTextFocus && resourceScheme == 'jadx'"
 			}
 		],
 		"commands": [
@@ -38,6 +43,11 @@
 				"command": "jadx.findAnything",
 				"title": "Find Anything",
 				"category": "JADX"
+			},
+			{
+				"command": "jadx.renameSymbol",
+				"title": "Rename Symbol",
+				"category": "JADX"
 			}
 		],
 		"menus": {
@@ -48,6 +58,16 @@
 				{
 					"command": "jadx.findAnything",
 					"when": "resourceScheme == 'jadx'"
+				},
+				{
+					"command": "jadx.renameSymbol",
+					"when": "editorTextFocus && resourceScheme == 'jadx'"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "jadx.renameSymbol",
+					"when": "editorTextFocus && resourceScheme == 'jadx'"
 				}
 			]
 		}

@@ -1,11 +1,29 @@
 import * as vscode from 'vscode';
-import { fetchJson, JadxLocation } from './utils';
+import { fetchJson, JadxLocation, postJson } from './utils';
 
 interface DefinitionResponse {
     def: JadxLocation | null;
 }
 
 const baseUrl = 'http://127.0.0.1:28080';
+
+interface RenameResponse {
+    location: JadxLocation;
+    name: string;
+}
+
+interface RenameInfoResponse {
+    canRename: boolean;
+    name: string | null;
+}
+
+export async function fetchRenameInfo(path: string, offset: number): Promise<RenameInfoResponse> {
+    return fetchJson(`${baseUrl}/rename/${path}?offset=${offset}`, null);
+}
+
+export async function renameSymbol(path: string, offset: number, name: string): Promise<RenameResponse> {
+    return postJson(`${baseUrl}/rename/${path}?offset=${offset}`, { name });
+}
 
 export async function fetchDefinition(path: string, offset: number, token: vscode.CancellationToken | null): Promise<DefinitionResponse> {
     const url = `${baseUrl}/definition/${path}?offset=${offset}`;
