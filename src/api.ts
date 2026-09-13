@@ -2,8 +2,12 @@ import * as vscode from 'vscode';
 import { nanoid } from 'nanoid';
 import { fetchJson, JadxLocation, JSONStreamer, postJson } from './utils';
 
+// The server serializes responses with the MCP SDK's Json
+// (explicitNulls = false): fields that are null on the server are omitted
+// from the JSON rather than encoded as null, so they are optional here.
+
 interface DefinitionResponse {
-    def: JadxLocation | null;
+    def?: JadxLocation;
 }
 
 const baseUrl = 'http://127.0.0.1:28080';
@@ -12,12 +16,12 @@ interface RenameResponse {
     location: JadxLocation;
     name: string;
     /** Set only when a top-level class was renamed and its file moved. */
-    oldLocation: JadxLocation | null;
+    oldLocation?: JadxLocation;
 }
 
 interface RenameInfoResponse {
     canRename: boolean;
-    name: string | null;
+    name?: string;
 }
 
 export async function fetchRenameInfo(path: string, offset: number): Promise<RenameInfoResponse> {
@@ -43,7 +47,7 @@ export async function fetchRefs(path: string, offset: number, token: vscode.Canc
 }
 
 interface AnnotationResponse {
-    content: string | null;
+    content?: string;
 }
 
 export async function fetchAnnotation(path: string, offset: number, token: vscode.CancellationToken | null): Promise<AnnotationResponse> {
@@ -52,14 +56,14 @@ export async function fetchAnnotation(path: string, offset: number, token: vscod
 }
 
 interface OutlineResponse {
-    root: Symbol | null;
+    root?: Symbol;
 }
 
 export interface Symbol {
     name: string;
     detail: string;
     kind: vscode.SymbolKind;
-    byteOffset: number | null;
+    byteOffset?: number;
     children: Symbol[];
 }
 
@@ -88,7 +92,7 @@ export interface CallHierarchyItem {
 }
 
 interface CallHierarchyPrepareResponse {
-    item: CallHierarchyItem | null;
+    item?: CallHierarchyItem;
 }
 
 export interface CallHierarchyCall {
@@ -125,7 +129,7 @@ export interface TypeHierarchyItem {
 }
 
 interface TypeHierarchyPrepareResponse {
-    item: TypeHierarchyItem | null;
+    item?: TypeHierarchyItem;
 }
 
 interface TypeHierarchyResponse {

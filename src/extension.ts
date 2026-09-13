@@ -225,7 +225,7 @@ async function renameSymbol(editor: vscode.TextEditor, jadxFs: JadxFs): Promise<
 	const offset = document.offsetAt(wordRange?.start ?? position);
 	const { path } = extractFromUri(document.uri);
 	const renameInfo = await api.fetchRenameInfo(path, offset);
-	if (!renameInfo.canRename || renameInfo.name === null) {
+	if (!renameInfo.canRename || !renameInfo.name) {
 		void vscode.window.showInformationMessage('The symbol at the current position cannot be renamed.');
 		return;
 	}

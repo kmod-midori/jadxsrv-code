@@ -70,4 +70,8 @@ Coordinate endpoint or response-schema changes with the sibling `jadxsrv`
 project. This extension consumes `ls`, `stat`, `read`, `annotation`,
 `definition`, `refs`, `outline`, `rename`, `callhierarchy`, `typehierarchy`,
 and streaming `search` endpoints, and assumes the server's LSP-style
-line/character positions and symbol kinds.
+line/character positions and symbol kinds. The server serializes with
+`McpJson` (`explicitNulls = false`): nullable response fields are omitted
+rather than encoded as `null`, so response types declare them as optional
+(`field?: T`, not `field: T | null`) and call sites must tolerate
+`undefined` (falsy checks, never `=== null`).

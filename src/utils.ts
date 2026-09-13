@@ -53,7 +53,8 @@ export function makeUri(path: string): vscode.Uri {
 export interface JadxLocation {
     topPackageName: string;
     topClassName: string;
-    position: { line: number; character: number; } | null;
+    /** Omitted by the server when the symbol has no position (McpJson drops null fields). */
+    position?: { line: number; character: number; };
 }
 
 export function jadxLocationToUri(location: JadxLocation): vscode.Uri {

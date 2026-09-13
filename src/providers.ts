@@ -14,10 +14,11 @@ export class JadxDefinitionProvider implements vscode.DefinitionProvider {
         const response = await api.fetchDefinition(path, offset, token);
         if (response.def) {
             const fileUri = jadxLocationToUri(response.def);
-            if (response.def.position === null) {
+            const defPosition = response.def.position;
+            if (!defPosition) {
                 return new vscode.Location(fileUri, new vscode.Position(0, 0));
             }
-            return new vscode.Location(fileUri, new vscode.Position(response.def.position.line, response.def.position.character));
+            return new vscode.Location(fileUri, new vscode.Position(defPosition.line, defPosition.character));
         }
         return [];
     }
@@ -32,10 +33,10 @@ export class JadxReferenceProvider implements vscode.ReferenceProvider {
         const res = [];
         for (const ref of response.refs) {
             const fileUri = jadxLocationToUri(ref);
-            if (ref.position === null) {
-                res.push(new vscode.Location(fileUri, new vscode.Position(0, 0)));
-            } else {
+            if (ref.position) {
                 res.push(new vscode.Location(fileUri, new vscode.Position(ref.position.line, ref.position.character)));
+            } else {
+                res.push(new vscode.Location(fileUri, new vscode.Position(0, 0)));
             }
         }
 
