@@ -113,3 +113,35 @@ export async function fetchCallHierarchyOutgoing(path: string, offset: number, t
     const url = `${baseUrl}/callhierarchy/outgoing/${path}?offset=${offset}`;
     return await fetchJson(url, token);
 }
+
+export interface TypeHierarchyItem {
+    name: string;
+    detail: string;
+    kind: vscode.SymbolKind;
+    location: JadxLocation;
+    /** Byte offset of the class declaration in the location's file */
+    offset: number;
+}
+
+interface TypeHierarchyPrepareResponse {
+    item: TypeHierarchyItem | null;
+}
+
+interface TypeHierarchyResponse {
+    items: TypeHierarchyItem[];
+}
+
+export async function fetchTypeHierarchyItem(path: string, offset: number, token: vscode.CancellationToken | null): Promise<TypeHierarchyPrepareResponse> {
+    const url = `${baseUrl}/typehierarchy/${path}?offset=${offset}`;
+    return await fetchJson(url, token);
+}
+
+export async function fetchTypeHierarchySupertypes(path: string, offset: number, token: vscode.CancellationToken | null): Promise<TypeHierarchyResponse> {
+    const url = `${baseUrl}/typehierarchy/supertypes/${path}?offset=${offset}`;
+    return await fetchJson(url, token);
+}
+
+export async function fetchTypeHierarchySubtypes(path: string, offset: number, token: vscode.CancellationToken | null): Promise<TypeHierarchyResponse> {
+    const url = `${baseUrl}/typehierarchy/subtypes/${path}?offset=${offset}`;
+    return await fetchJson(url, token);
+}

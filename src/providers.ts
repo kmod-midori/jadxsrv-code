@@ -161,3 +161,49 @@ export class JadxCallHierarchyProvider implements vscode.CallHierarchyProvider {
         return calls;
     }
 }
+
+export class JadxTypeHierarchyProvider implements vscode.TypeHierarchyProvider {
+    // Same WeakMap identity trick as JadxCallHierarchyProvider (see there).
+    private itemData = new WeakMap<vscode.TypeHierarchyItem, CallHierarchyItemData>();
+
+    private async toItem(item: api.TypeHierarchyItem): Promise<vscode.TypeHierarchyItem> {
+        const uri = jadxLocationToUri(item.location);
+        const document = await vscode.workspace.openTextDocument(uri);
+        const range = offsetRange(document, item.offset, item.name.length);
+        const result = new vscode.TypeHierarchyItem(item.kind, item.name, item.detail, uri, range, range);
+        this.itemData.set(result, { path: extractFromUri(uri).path, offset: item.offset });
+        return result;
+    }
+
+    private async fetchItems(fetch: (path: string, offset: number, token: vscode.CancellationToken | null) => Promise<{ items: api.TypeHierarchyItem[] }>, item: vscode.TypeHierarchyItem, token: vscode.CancellationToken): Promise<vscode.TypeHierarchyItem[]> {
+        const data = this.itemData.get(item);
+        if (!data) {
+            return [];
+        }
+        const response = await fetch(data.path, data.offset, token);
+        return Promise.all(response.items.map(child => this.toItem(child)));
+    }
+
+    async prepareTypeHierarchy(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken): Promise<vscode.TypeHierarchyItem[]> {
+        const { path } = extractFromUri(document.uri);
+        let customRegex: RegExp | undefined = undefined;
+        if (document.languageId === 'xml') {
+            customRegex = /[a-zA-Z0-9.]+/;
+        }
+        const wordRange = document.getWordRangeAtPosition(position, customRegex);
+        const offset = document.offsetAt(wordRange?.start ?? position);
+        const response = await api.fetchTypeHierarchyItem(path, offset, token);
+        if (!response.item) {
+            return [];
+        }
+        return [await this.toItem(response.item)];
+    }
+
+    async provideTypeHierarchySupertypes(item: vscode.TypeHierarchyItem, token: vscode.CancellationToken): Promise<vscode.TypeHierarchyItem[]> {
+        return this.fetchItems(api.fetchTypeHierarchySupertypes, item, token);
+    }
+
+    async provideTypeHierarchySubtypes(item: vscode.TypeHierarchyItem, token: vscode.CancellationToken): Promise<vscode.TypeHierarchyItem[]> {
+        return this.fetchItems(api.fetchTypeHierarchySubtypes, item, token);
+    }
+}

@@ -68,6 +68,6 @@ symbol renaming behaviour against a running `jadxsrv` server.
 
 Coordinate endpoint or response-schema changes with the sibling `jadxsrv`
 project. This extension consumes `ls`, `stat`, `read`, `annotation`,
-`definition`, `refs`, `outline`, `rename`, `callhierarchy`, and streaming
-`search` endpoints, and assumes the server's LSP-style line/character
-positions and symbol kinds.
+`definition`, `refs`, `outline`, `rename`, `callhierarchy`, `typehierarchy`,
+and streaming `search` endpoints, and assumes the server's LSP-style
+line/character positions and symbol kinds.

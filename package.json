@@ -36,6 +36,11 @@
 				"key": "c",
 				"command": "editor.showCallHierarchy",
 				"when": "editorTextFocus && resourceScheme == 'jadx'"
+			},
+			{
+				"key": "t",
+				"command": "editor.showTypeHierarchy",
+				"when": "editorTextFocus && resourceScheme == 'jadx'"
 			}
 		],
 		"commands": [

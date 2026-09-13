@@ -21,6 +21,7 @@ your editor:
 | Find usages | Yes | Yes (VS Code references, `X` on a symbol) |
 | Full text / symbol search | Yes, in-app dialogs | **Find Anything** quick pick — live, streamed results for classes, methods, fields, and text |
 | Call hierarchy | No | Yes, incoming and outgoing calls (`C` on a method) |
+| Type hierarchy | No | Yes, supertypes and subtypes (`T` on a class) |
 | Hover info | Limited | Type and signature hovers in Java and XML |
 | Outline / breadcrumbs | Class tree in a side panel | VS Code document symbols, outline view, breadcrumbs |
 | Symbol renaming (deobfuscation) | Yes, persisted per project | Yes (`N` on a symbol), in-memory aliases on the server |
@@ -39,6 +40,9 @@ of GUI-only features like the smali debugger and live settings tweaks.
   and other XML resources into decompiled code.
 - **Find references** — select a symbol and press `X`.
 - **Call hierarchy** — press `C` on a method for incoming/outgoing calls.
+- **Type hierarchy** — press `T` on a class or interface to walk supertype
+  (extends/implements) and subtype (implementations/overrides) chains in VS
+  Code's type hierarchy view; works on class references in XML resources too.
 - **Hover** — signatures, types, and documentation.
 - **Document symbols** — outline view and breadcrumbs for each decompiled class.
 - **Find Anything** (`JADX: Find Anything`) — fuzzy search over classes,

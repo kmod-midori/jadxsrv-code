@@ -296,6 +296,10 @@ export function activate(context: vscode.ExtensionContext) {
 	const callHierarchyProvider = new providers.JadxCallHierarchyProvider();
 	context.subscriptions.push(vscode.languages.registerCallHierarchyProvider({ language: 'java', scheme: 'jadx' }, callHierarchyProvider));
 
+	const typeHierarchyProvider = new providers.JadxTypeHierarchyProvider();
+	context.subscriptions.push(vscode.languages.registerTypeHierarchyProvider({ language: 'java', scheme: 'jadx' }, typeHierarchyProvider));
+	context.subscriptions.push(vscode.languages.registerTypeHierarchyProvider({ language: 'xml', scheme: 'jadx' }, typeHierarchyProvider));
+
 	context.subscriptions.push(vscode.commands.registerCommand('jadx.openDecompiler', () => {
 		openDecompiler();
 	}));
