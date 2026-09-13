@@ -49,6 +49,9 @@ of GUI-only features like the smali debugger and live settings tweaks.
   methods, fields, and text, with case-sensitivity options; results stream in
   as the server finds them, and stale searches are cancelled server-side as you
   type.
+- **Go to symbol in workspace** (Ctrl+T) — case-insensitive class, method, and
+  field search wired into VS Code's workspace symbol search, backed by the
+  same streamed endpoint.
 - **Rename symbol** (`JADX: Rename Symbol`, `N` on a symbol) — assign a
   readable alias to an obfuscated class, method, or field. Renames update call
   sites across all classes; an empty name resets the alias. Aliases live in

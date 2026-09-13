@@ -207,3 +207,23 @@ export class JadxTypeHierarchyProvider implements vscode.TypeHierarchyProvider {
         return this.fetchItems(api.fetchTypeHierarchySubtypes, item, token);
     }
 }
+
+export class JadxWorkspaceSymbolProvider implements vscode.WorkspaceSymbolProvider {
+    async provideWorkspaceSymbols(query: string, token: vscode.CancellationToken): Promise<vscode.SymbolInformation[]> {
+        if (!query) {
+            return [];
+        }
+        const symbols = await api.searchSymbols(query, ['class', 'method', 'field'], 200, token);
+        const results: vscode.SymbolInformation[] = [];
+        for (const item of symbols) {
+            const uri = jadxLocationToUri(item.location);
+            // Class symbols have no position; jump to the file top, same as
+            // the Find Anything quick pick.
+            const position = item.location.position
+                ? new vscode.Position(item.location.position.line, item.location.position.character)
+                : new vscode.Position(0, 0);
+            results.push(new vscode.SymbolInformation(item.name, item.kind, item.containerName, new vscode.Location(uri, position)));
+        }
+        return results;
+    }
+}

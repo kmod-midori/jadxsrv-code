@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
-import { fetchJson, JadxLocation, postJson } from './utils';
+import { nanoid } from 'nanoid';
+import { fetchJson, JadxLocation, JSONStreamer, postJson } from './utils';
 
 interface DefinitionResponse {
     def: JadxLocation | null;
@@ -144,4 +145,47 @@ export async function fetchTypeHierarchySupertypes(path: string, offset: number,
 export async function fetchTypeHierarchySubtypes(path: string, offset: number, token: vscode.CancellationToken | null): Promise<TypeHierarchyResponse> {
     const url = `${baseUrl}/typehierarchy/subtypes/${path}?offset=${offset}`;
     return await fetchJson(url, token);
+}
+
+export interface SearchSymbol {
+    name: string;
+    containerName: string;
+    kind: vscode.SymbolKind;
+    detail: string;
+    location: JadxLocation;
+}
+
+/**
+ * Promise wrapper around the streaming /search endpoint: collect items until
+ * the stream ends. Cancellation aborts the fetch and cancels the task
+ * server-side, mirroring the Find Anything quick pick.
+ */
+export async function searchSymbols(query: string, types: string[], limit: number, token: vscode.CancellationToken | null): Promise<SearchSymbol[]> {
+    const taskId = nanoid();
+    const url = `${baseUrl}/search/${taskId}?types=${encodeURIComponent(types.join(','))}&limit=${limit}&ignoreCase=true&query=${encodeURIComponent(query)}`;
+    const streamer = new JSONStreamer<SearchSymbol>(url, { method: 'POST' });
+    token?.onCancellationRequested(() => {
+        streamer.cancel();
+        fetch(`${baseUrl}/search/${taskId}`, { method: 'DELETE' }).catch((err) => {
+            console.error(`Error cancelling search task ${taskId}`, err);
+        });
+    });
+
+    const items: SearchSymbol[] = [];
+    return new Promise<SearchSymbol[]>((resolve, reject) => {
+        streamer.onItem(item => {
+            if (item) {
+                items.push(item);
+            } else {
+                resolve(items);
+            }
+        });
+        streamer.start().catch((err) => {
+            if (err.name === 'AbortError') {
+                resolve(items);
+                return;
+            }
+            reject(err);
+        });
+    });
 }
