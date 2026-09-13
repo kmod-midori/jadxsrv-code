@@ -24,7 +24,7 @@ your editor:
 | Type hierarchy | No | Yes, supertypes and subtypes (`T` on a class) |
 | Hover info | Limited | Type and signature hovers in Java and XML |
 | Outline / breadcrumbs | Class tree in a side panel | VS Code document symbols, outline view, breadcrumbs |
-| Symbol renaming (deobfuscation) | Yes, persisted per project | Yes (`N` on a symbol), in-memory aliases on the server |
+| Symbol renaming (deobfuscation) | Yes, persisted per project | Yes (`N` on a symbol), persisted via the server's `--code-data` file |
 | Editing / refactoring UX | Fixed dialogs | Split editors, peek views, multi-cursor, Vim/emacs modes, git — everything VS Code offers |
 | Smali debugger | Yes | No |
 | Decompiler settings | Adjustable live in the UI | Fixed when the server starts |
@@ -54,8 +54,10 @@ of GUI-only features like the smali debugger and live settings tweaks.
   same streamed endpoint.
 - **Rename symbol** (`JADX: Rename Symbol`, `N` on a symbol) — assign a
   readable alias to an obfuscated class, method, or field. Renames update call
-  sites across all classes; an empty name resets the alias. Aliases live in
-  server memory and reset when `jadxsrv` restarts.
+  sites across all classes; an empty name resets the alias. Aliases are
+  in-memory by default and persist across restarts when `jadxsrv` is started
+  with `--code-data <file>` (same JSON format as a jadx-gui project's
+  `codeData` block, so mappings can be shared with the GUI).
 
 ## Installing the extension
 
