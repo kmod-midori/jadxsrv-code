@@ -3,7 +3,7 @@
 	"displayName": "JADX",
 	"description": "Showcase for the file system provider API, also useful for testing again document that are not on disk.",
 	"version": "0.0.3",
-	"publisher": "vscode-samples",
+	"publisher": "jadxsrv",
 	"private": true,
 	"license": "MIT",
 	"repository": {

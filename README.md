@@ -1,31 +1,64 @@
 # JADX for VS Code
 
-This VS Code extension exposes content decompiled by
-[jadxsrv](../jadxsrv) as a read-only `jadx:` filesystem. It provides
-go-to-definition, references, hover information, document symbols, and search
-for decompiled source.
+Browse and analyze Android apps decompiled by [jadx](https://github.com/skylot/jadx)
+directly inside VS Code.
 
-## Getting started
+This extension is the client half of a small client/server setup: the sibling
+`jadxsrv` server wraps jadx and exposes a decompiled APK, DEX, or
+JAR as a read-only `jadx:` virtual filesystem over HTTP. This extension mounts
+that filesystem in VS Code and layers full IDE navigation on top of it.
 
-Start `jadxsrv` with the APK, JAR, or DEX inputs to decompile:
+## Why not jadx-gui?
+
+The official [jadx-gui](https://github.com/skylot/jadx) is a standalone Swing application. This
+project reuses the same decompiler core, but moves the browsing experience into
+your editor:
+
+| | jadx-gui (official) | this extension |
+|---|---|---|
+| UI | Dedicated Swing app | VS Code, your theme, fonts, and keybindings |
+| Go to declaration | Yes | Yes (`F12` / Ctrl+Click) |
+| Find usages | Yes | Yes (VS Code references, `X` on a symbol) |
+| Full text / symbol search | Yes, in-app dialogs | **Find Anything** quick pick — live, streamed results for classes, methods, fields, and text |
+| Call hierarchy | No | Yes, incoming and outgoing calls (`C` on a method) |
+| Hover info | Limited | Type and signature hovers in Java and XML |
+| Outline / breadcrumbs | Class tree in a side panel | VS Code document symbols, outline view, breadcrumbs |
+| Symbol renaming (deobfuscation) | Yes, persisted per project | Yes (`N` on a symbol), in-memory aliases on the server |
+| Editing / refactoring UX | Fixed dialogs | Split editors, peek views, multi-cursor, Vim/emacs modes, git — everything VS Code offers |
+| Smali debugger | Yes | No |
+| Decompiler settings | Adjustable live in the UI | Fixed when the server starts |
+
+The trade-off: you get VS Code's editing ergonomics and ecosystem, at the cost
+of GUI-only features like the smali debugger and live settings tweaks.
+
+## Features
+
+- **`jadx:` filesystem** — the decompiled app appears as a normal folder tree
+  (`classes/` and `resources/`) in the Explorer, openable like any workspace.
+- **Go to definition** — works across classes, and from `AndroidManifest.xml`
+  and other XML resources into decompiled code.
+- **Find references** — select a symbol and press `X`.
+- **Call hierarchy** — press `C` on a method for incoming/outgoing calls.
+- **Hover** — signatures, types, and documentation.
+- **Document symbols** — outline view and breadcrumbs for each decompiled class.
+- **Find Anything** (`JADX: Find Anything`) — fuzzy search over classes,
+  methods, fields, and text, with case-sensitivity options; results stream in
+  as the server finds them, and stale searches are cancelled server-side as you
+  type.
+- **Rename symbol** (`JADX: Rename Symbol`, `N` on a symbol) — assign a
+  readable alias to an obfuscated class, method, or field. Renames update call
+  sites across all classes; an empty name resets the alias. Aliases live in
+  server memory and reset when `jadxsrv` restarts.
+
+## Installing the extension
+
+Every push builds a `.vsix` package and uploads it as the
+`jadxsrv-code-vsix` workflow artifact (see the Actions tab). Download it and
+install with:
 
 ```bash
-cd ../jadxsrv
-./run.sh /absolute/path/to/app.apk
+code --install-extension extension.vsix
 ```
-
-Install and launch this extension, then run **JADX: Open Decompiled Files** from
-the Command Palette. The extension opens `jadx:/` and connects to the server at
-`http://127.0.0.1:28080`.
-
-The server owns the decompiler lifecycle and input selection. To decompile
-different files, restart `jadxsrv` with the new input paths before reopening the
-JADX workspace.
-
-Use **JADX: Rename Symbol** from the editor context menu or Command Palette
-(default shortcut: `N`) to rename the class, method, or field under the cursor.
-Enter an empty name to reset its alias. Renames last until `jadxsrv` is
-restarted.
 
 ## Development
 
